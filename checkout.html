@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Checkout — XRZENOshop</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/theme.css" />
+<link rel="stylesheet" href="assets/tweaks.css" />
+<style>
+  .checkout-stepper { display: flex; align-items: center; justify-content: center; gap: 14px; margin: 24px 0 16px; }
+  .step { display: flex; align-items: center; gap: 10px; font-size: 13px; color: var(--ink-soft); }
+  .step .num { width: 26px; height: 26px; border-radius: 999px; display: grid; place-items: center; background: var(--bg); border: 1px solid var(--border); font-weight: 700; font-size: 12px; }
+  .step.is-done .num { background: var(--success); color: white; border-color: var(--success); }
+  .step.is-done { color: var(--ink); }
+  .step.is-active .num { background: var(--primary); color: white; border-color: var(--primary); }
+  .step.is-active { color: var(--ink); font-weight: 600; }
+  .step-divider { width: 60px; height: 1px; background: var(--border); }
+  @media (max-width: 720px) { .step-divider { width: 20px; } .step span:not(.num) { display: none; } }
+
+  .checkout-layout { display: grid; grid-template-columns: 1fr 380px; gap: 24px; align-items: start; }
+  @media (max-width: 980px) { .checkout-layout { grid-template-columns: 1fr; } }
+
+  .ck-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 22px; margin-bottom: 16px; }
+  .ck-card h2 { margin: 0 0 16px; font-size: 16px; font-weight: 700; display: flex; align-items: center; gap: 10px; }
+  .ck-card h2 .ix { width: 24px; height: 24px; border-radius: 999px; background: var(--primary); color: white; display: grid; place-items: center; font-size: 12px; font-weight: 700; }
+  .ck-card h2 a { font-size: 12px; font-weight: 600; color: var(--primary); margin-left: auto; }
+
+  /* Address */
+  .addr-box { display: grid; grid-template-columns: auto 1fr auto; gap: 14px; align-items: start; padding: 14px; border: 1.5px solid var(--primary); background: var(--primary-soft); border-radius: var(--radius); }
+  .addr-box .pin { width: 36px; height: 36px; border-radius: 999px; background: var(--primary); color: white; display: grid; place-items: center; flex-shrink: 0; }
+  .addr-box .name { font-size: 14px; font-weight: 700; }
+  .addr-box .name .tag { font-size: 11px; font-weight: 600; padding: 2px 8px; background: var(--primary); color: white; border-radius: 999px; margin-left: 8px; }
+  .addr-box .phone { font-size: 12.5px; color: var(--ink-muted); }
+  .addr-box .text { font-size: 13px; color: var(--ink); margin-top: 6px; line-height: 1.45; }
+  .addr-box button { background: transparent; border: 1px solid var(--border); color: var(--primary); font-weight: 600; font-size: 12.5px; padding: 6px 12px; border-radius: 6px; cursor: pointer; }
+  .addr-box button:hover { background: var(--surface); border-color: var(--primary); }
+
+  /* Item review */
+
+  .ck-item { display: grid; grid-template-columns: 56px 1fr auto; gap: 14px; padding: 8px 0; align-items: center; }
+  .ck-item .thumb { width: 56px; height: 56px; border-radius: 8px; overflow: hidden; position: relative; background: var(--bg); }
+  .ck-item .info p { margin: 0; font-size: 13px; line-height: 1.35; }
+  .ck-item .info .variant { font-size: 12px; color: var(--ink-muted); }
+  .ck-item .info .qty-line { font-size: 12px; color: var(--ink-muted); margin-top: 2px; }
+  .ck-item .price { font-weight: 700; font-size: 14px; text-align: right; }
+
+  .ship-options { display: flex; flex-direction: column; gap: 10px; padding-top: 14px; border-top: 1px solid var(--border); margin-top: 12px; }
+  .ship-opt { display: flex; align-items: center; gap: 12px; padding: 12px 14px; border: 1px solid var(--border); border-radius: var(--radius-sm); cursor: pointer; transition: border-color .12s, background .12s; }
+  .ship-opt:hover { border-color: var(--primary); }
+  .ship-opt.is-active { border-color: var(--primary); background: var(--primary-soft); }
+  .ship-opt input[type="radio"] { accent-color: var(--primary); }
+  .ship-opt .ship-info { flex: 1; }
+  .ship-opt .ship-info strong { display: block; font-size: 13.5px; }
+  .ship-opt .ship-info span { font-size: 12px; color: var(--ink-muted); }
+  .ship-opt .ship-price { font-weight: 700; font-size: 14px; }
+
+  /* Payment */
+  .pay-method-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  @media (max-width: 520px) { .pay-method-grid { grid-template-columns: 1fr; } }
+  .pay-opt { display: flex; align-items: center; gap: 12px; padding: 14px; border: 1px solid var(--border); border-radius: var(--radius-sm); cursor: pointer; transition: border-color .12s, background .12s; }
+  .pay-opt:hover { border-color: var(--primary); }
+  .pay-opt.is-active { border-color: var(--primary); background: var(--primary-soft); }
+  .pay-opt input { accent-color: var(--primary); }
+  .pay-opt .ico { width: 38px; height: 24px; border-radius: 4px; background: var(--bg); display: grid; place-items: center; font-size: 9px; font-weight: 700; color: var(--ink-muted); }
+  .pay-opt .label { font-size: 13.5px; font-weight: 600; }
+  .pay-opt .sub { font-size: 11.5px; color: var(--ink-muted); display: block; }
+  .pay-section-title { font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: .04em; color: var(--ink-muted); margin: 16px 0 10px; }
+  .pay-section-title:first-of-type { margin-top: 0; }
+
+  /* Summary */
+  .ck-summary { position: sticky; top: 80px; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 20px; display: flex; flex-direction: column; gap: 12px; }
+  .ck-summary h2 { margin: 0 0 4px; font-size: 16px; font-weight: 700; }
+  .ck-summary .line { display: flex; justify-content: space-between; font-size: 13.5px; }
+  .ck-summary .line span:first-child { color: var(--ink-muted); }
+  .ck-summary .line strong { color: var(--ink); font-weight: 600; }
+  .ck-summary .line.discount strong { color: var(--success); }
+  .ck-summary .total { display: flex; justify-content: space-between; align-items: baseline; padding-top: 14px; border-top: 1px solid var(--border); margin-top: 4px; }
+  .ck-summary .total span { font-size: 13px; color: var(--ink-muted); }
+  .ck-summary .total strong { font-size: 22px; font-weight: 800; color: var(--primary); letter-spacing: -0.01em; }
+
+  textarea.input { font-family: inherit; min-height: 60px; resize: vertical; }
+  .field-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 10px; }
+  @media (max-width: 520px) { .field-row { grid-template-columns: 1fr; } }
+</style>
+</head>
+<body>
+
+  <header class="site-top">
+    <div class="site-header" style="padding: 14px 24px;">
+      <a href="index.html" class="brand"><div class="brand-mark">X</div><div class="brand-name">xrzeno<span>shop</span></div></a>
+      <div style="flex:1;text-align:center;font-weight:700;font-size:16px;letter-spacing:-0.01em">Checkout</div>
+      <a href="cart.html" class="btn btn-ghost btn-sm" style="font-size:12.5px;color:var(--ink-muted)">← Back to cart</a>
+    </div>
+  </header>
+
+  <main class="container">
+
+    <div class="checkout-stepper">
+      <div class="step is-done"><span class="num">✓</span><span>Cart</span></div>
+      <span class="step-divider"></span>
+      <div class="step is-active"><span class="num">2</span><span>Address &amp; Payment</span></div>
+      <span class="step-divider"></span>
+      <div class="step"><span class="num">3</span><span>Confirmation</span></div>
+    </div>
+
+    <div class="checkout-layout">
+
+      <div>
+        <!-- Shipping address -->
+        <div class="ck-card">
+          <h2><span class="ix">1</span> Shipping address <a href="#">Manage addresses</a></h2>
+          <div class="addr-box">
+            <div class="pin"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg></div>
+            <div>
+              <div class="name">Andi Kurniawan <span class="tag">Default</span></div>
+              <div class="phone">+62 812 3456 7890</div>
+              <div class="text">Jl. Sudirman Kav. 28, RT 02 / RW 06, Karet Tengsin, Tanah Abang, Jakarta Pusat, DKI Jakarta 10220</div>
+            </div>
+            <button>Change</button>
+          </div>
+        </div>
+
+        <!-- Items -->
+        <div class="ck-card">
+          <h2><span class="ix">2</span> Order items</h2>
+
+          <div class="ck-item">
+            <div class="thumb"><img src="assets/products/ballerina/Ballerina1.jpeg" alt="Ballerina Figurine" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover"></div>
+            <div class="info">
+              <p>Ballerina Figurine</p>
+              <span class="variant">Hand-finished gold leaf · Matte black base</span>
+              <div class="qty-line">Qty: 1 × Rp675.000</div>
+            </div>
+            <div class="price">Rp675.000</div>
+          </div>
+
+          <div class="ship-options" id="ship-1">
+            <div class="ship-opt is-active">
+              <input type="radio" name="ship-1" checked />
+              <div class="ship-info"><strong>Same Day · Instant</strong><span>Arrives today, before 9 PM</span></div>
+              <div class="ship-price">Rp32.000</div>
+            </div>
+            <div class="ship-opt">
+              <input type="radio" name="ship-1" />
+              <div class="ship-info"><strong>Express · 1 day</strong><span>Tomorrow, by 5 PM</span></div>
+              <div class="ship-price">Rp18.000</div>
+            </div>
+            <div class="ship-opt">
+              <input type="radio" name="ship-1" />
+              <div class="ship-info"><strong>Standard · 2–3 days</strong><span>Reliable carrier</span></div>
+              <div class="ship-price">Rp9.000</div>
+            </div>
+          </div>
+
+          <textarea class="input" placeholder="Order notes (optional)" style="margin-top:14px"></textarea>
+        </div>
+
+        <!-- Payment -->
+        <div class="ck-card">
+          <h2><span class="ix">3</span> Payment method</h2>
+
+          <div class="pay-section-title">XRZENO Pay</div>
+          <div class="pay-method-grid" data-group="pay">
+            <div class="pay-opt is-active">
+              <input type="radio" name="pay" checked />
+              <span class="ico" style="background:var(--primary);color:white">X PAY</span>
+              <div><span class="label">XRZENO Wallet</span><span class="sub">Balance: Rp1.450.000</span></div>
+            </div>
+          </div>
+
+          <div class="pay-section-title">E-Wallets</div>
+          <div class="pay-method-grid" data-group="pay">
+            <div class="pay-opt"><input type="radio" name="pay" /><span class="ico">GOPAY</span><span class="label">GoPay</span></div>
+            <div class="pay-opt"><input type="radio" name="pay" /><span class="ico">OVO</span><span class="label">OVO</span></div>
+            <div class="pay-opt"><input type="radio" name="pay" /><span class="ico">DANA</span><span class="label">DANA</span></div>
+            <div class="pay-opt"><input type="radio" name="pay" /><span class="ico">QRIS</span><span class="label">QRIS</span></div>
+          </div>
+
+          <div class="pay-section-title">Cards</div>
+          <div class="pay-method-grid" data-group="pay">
+            <div class="pay-opt"><input type="radio" name="pay" /><span class="ico">VISA</span><div><span class="label">Credit / Debit Card</span><span class="sub">Visa, Mastercard, JCB</span></div></div>
+            <div class="pay-opt"><input type="radio" name="pay" /><span class="ico">VA</span><div><span class="label">Virtual Account</span><span class="sub">BCA, Mandiri, BNI, BRI</span></div></div>
+          </div>
+
+          <div class="pay-section-title">Other</div>
+          <div class="pay-method-grid" data-group="pay">
+            <div class="pay-opt"><input type="radio" name="pay" /><span class="ico">COD</span><div><span class="label">Cash on Delivery</span><span class="sub">+Rp4.500 fee</span></div></div>
+            <div class="pay-opt"><input type="radio" name="pay" /><span class="ico">PAYL</span><div><span class="label">PayLater</span><span class="sub">3, 6, 12 months</span></div></div>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Order summary -->
+      <aside class="ck-summary">
+        <h2>Order Summary</h2>
+
+        <div class="line"><span>Subtotal (1 item)</span><strong>Rp675.000</strong></div>
+        <div class="line discount"><span>Promo (XRZ2026)</span><strong>−Rp67.500</strong></div>
+        <div class="line"><span>Shipping</span><strong>Rp32.000</strong></div>
+        <div class="line"><span>Service fee</span><strong>Rp1.500</strong></div>
+        <div class="line"><span>Insurance</span><strong>Rp2.500</strong></div>
+
+        <div class="total">
+          <span>Total payment</span>
+          <strong>Rp643.500</strong>
+        </div>
+
+        <div style="font-size:11.5px;color:var(--ink-muted);background:var(--bg);padding:10px;border-radius:6px">
+          You'll save <strong style="color:var(--success)">Rp67.500</strong> on this order.
+        </div>
+
+        <button class="btn btn-primary w-full" style="height:50px;font-size:15px;font-weight:700">
+          Place Order · Rp643.500
+        </button>
+
+        <div style="font-size:11px;color:var(--ink-muted);text-align:center;line-height:1.5">
+          By placing this order you agree to XRZENO's <a href="#" style="color:var(--primary)">Terms</a> &amp; <a href="#" style="color:var(--primary)">Privacy Policy</a>.
+        </div>
+
+        <div style="display:flex;align-items:flex-start;gap:8px;font-size:11.5px;color:var(--ink-muted);padding-top:12px;border-top:1px solid var(--border)">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--success)" stroke-width="2" style="flex-shrink:0;margin-top:1px"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+          <span><strong style="color:var(--ink)">100% Buyer Protection</strong> — Get a full refund if your item doesn't arrive or isn't as described.</span>
+        </div>
+      </aside>
+
+    </div>
+
+  </main>
+
+  <footer class="site-foot" style="margin-top:48px">
+    <div class="foot-bottom" style="border-top:none">
+      <span>© 2026 XRZENOshop · Secure checkout</span>
+      <div class="pay-row"><span class="pay">VISA</span><span class="pay">MC</span><span class="pay">GOPAY</span><span class="pay">OVO</span><span class="pay">QRIS</span></div>
+    </div>
+  </footer>
+
+  <script src="assets/tweaks.js"></script>
+  <script>
+    // Shipping option toggle
+    document.querySelectorAll('.ship-options').forEach(group => {
+      group.addEventListener('click', e => {
+        const opt = e.target.closest('.ship-opt');
+        if (!opt) return;
+        group.querySelectorAll('.ship-opt').forEach(o => o.classList.remove('is-active'));
+        opt.classList.add('is-active');
+        opt.querySelector('input').checked = true;
+      });
+    });
+    // Payment toggle (across all groups since name=pay)
+    document.querySelectorAll('.pay-opt').forEach(opt => {
+      opt.addEventListener('click', () => {
+        document.querySelectorAll('.pay-opt').forEach(o => o.classList.remove('is-active'));
+        opt.classList.add('is-active');
+        opt.querySelector('input').checked = true;
+      });
+    });
+  </script>
+</body>
+</html>
